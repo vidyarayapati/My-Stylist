@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Occasion Planner | My Stylist</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{
+  background:linear-gradient(135deg,#ffe6f7,#f8e6ff,#ffffff);
+  min-height:100vh;color:#333;display:flex;flex-direction:column;
+}
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 40px;
+  background:rgba(255,255,255,0.3);
+  backdrop-filter:blur(15px);
+  box-shadow:0 4px 25px rgba(216,187,255,0.3);
+  position:sticky;top:0;z-index:10;
+}
+header h1{
+  font-family:"Dancing Script",cursive;font-size:2.5rem;
+  background:linear-gradient(120deg,#e3a3b5,#b38bff,#f6d9f3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 6s infinite linear;
+}
+@keyframes shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
+.go-back{
+  font-size:1rem;background:#b38bff;color:#fff;padding:8px 15px;
+  border-radius:12px;cursor:pointer;box-shadow:0 0 15px rgba(179,139,255,0.6);
+  transition:all 0.3s ease;text-decoration:none;
+}
+.go-back:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(179,139,255,0.8);}
+.container{
+  width:95%;max-width:1100px;margin:40px auto;
+  background:rgba(255,255,255,0.35);
+  backdrop-filter:blur(15px);
+  border-radius:25px;
+  box-shadow:0 0 25px rgba(179,139,255,0.4);
+  padding:30px 40px;
+  display:flex;flex-direction:column;gap:30px;
+}
+.title{
+  text-align:center;font-family:"Dancing Script",cursive;
+  font-size:2.3rem;color:#7d57c9;text-shadow:0 0 10px rgba(200,160,255,0.5);
+}
+.intro{text-align:center;font-size:1rem;color:#555;margin-top:-10px;}
+.chat-box{
+  background:rgba(255,255,255,0.5);
+  border-radius:20px;
+  box-shadow:inset 0 0 20px rgba(179,139,255,0.3);
+  padding:20px;min-height:350px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:15px;
+}
+.msg{padding:12px 16px;border-radius:18px;max-width:75%;animation:fadeIn 0.4s ease;}
+.user-msg{align-self:flex-end;background:linear-gradient(120deg,#d5b3ff,#b38bff);color:white;box-shadow:0 0 10px rgba(179,139,255,0.6);}
+.ai-msg{align-self:flex-start;background:rgba(255,255,255,0.85);border:1px solid rgba(200,160,255,0.3);box-shadow:0 0 10px rgba(200,160,255,0.3);color:#333;}
+.typing{align-self:flex-start;background:rgba(255,255,255,0.85);border-radius:18px;padding:10px 18px;color:#7d57c9;font-style:italic;animation:pulse 1.5s infinite ease-in-out;}
+@keyframes pulse{0%,100%{opacity:0.6;}50%{opacity:1;}}
+.outfit-preview{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.outfit-preview img{width:160px;height:200px;border-radius:15px;object-fit:cover;box-shadow:0 0 15px rgba(179,139,255,0.5);}
+.restyle-btn{background:#b38bff;color:#fff;border:none;border-radius:12px;padding:6px 12px;font-size:0.9rem;cursor:pointer;box-shadow:0 0 15px rgba(179,139,255,0.5);transition:all 0.3s ease;}
+.restyle-btn:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(179,139,255,0.8);}
+.input-area{display:flex;gap:10px;align-items:center;}
+.input-area textarea{flex:1;resize:none;border:none;border-radius:15px;padding:12px;height:70px;outline:none;background:rgba(255,255,255,0.6);box-shadow:inset 0 0 10px rgba(179,139,255,0.3);font-size:1rem;}
+.input-area button{background:#b38bff;color:#fff;border:none;border-radius:15px;padding:12px 20px;cursor:pointer;font-size:1rem;box-shadow:0 0 15px rgba(179,139,255,0.5);transition:all 0.3s ease;}
+.input-area button:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(179,139,255,0.8);}
+footer{text-align:center;padding:15px;font-size:0.9rem;color:#777;margin-top:30px;}
+</style>
+</head>
+
+<body>
+<header>
+  <a class="go-back" href="home.html"><i class="fas fa-arrow-left"></i> Go Back</a>
+  <h1>AI Occasion Planner</h1>
+</header>
+
+<div class="container">
+  <h2 class="title">Plan Your Perfect Look 💃</h2>
+  <p class="intro">Ask AI to suggest outfits from your wardrobe or get custom luxury recommendations for your occasion!</p>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <div class="input-area">
+    <textarea id="userInput" placeholder="Ask AI for outfit suggestions..."></textarea>
+    <button onclick="sendMessage()">Ask AI</button>
+  </div>
+</div>
+
+<footer>© 2025 My Stylist • Designed with 💜 Lavender Aesthetics</footer>
+
+<script>
+const chatBox=document.getElementById("chatBox");
+const userInput=document.getElementById("userInput");
+let wardrobe=JSON.parse(localStorage.getItem("wardrobeSelectedItems"))||{};
+let chatHistory=JSON.parse(localStorage.getItem("occasionChatHistory"))||[];
+
+// Render chat history on load
+function renderChat(){
+  chatBox.innerHTML='';
+  if(chatHistory.length===0){
+    addMessage("👗 Hello! Tell me your occasion — for example, 'wedding', 'date', or 'business meeting'.","ai-msg",false);
+  }else{
+    chatHistory.forEach(m=>{
+      if(m.type==="ai-msg"||m.type==="user-msg"){
+        addMessage(m.text,m.type,false);
+      } else if(m.type==="outfit"&&m.src){
+        addMessage("📷 (previous outfit image removed) Consider re-asking to get a fresh textual suggestion.","ai-msg",false);
+      }
+    });
+  }
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+// Add messages
+function addMessage(text,type,save=true){
+  const msg=document.createElement("div");
+  msg.classList.add("msg",type);
+  msg.textContent=text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop=chatBox.scrollHeight;
+  if(save){
+    chatHistory.push({type,text});
+    localStorage.setItem("occasionChatHistory",JSON.stringify(chatHistory));
+  }
+}
+
+// Add outfit preview
+// Removed image preview rendering — suggestions are now textual only.
+
+function showTyping(){
+  const t=document.createElement("div");
+  t.classList.add("typing");
+  t.textContent="AI is thinking...";
+  chatBox.appendChild(t);
+  chatBox.scrollTop=chatBox.scrollHeight;
+  return t;
+}
+
+function sendMessage(){
+  const text=userInput.value.trim();
+  if(!text)return;
+  addMessage(text,"user-msg");
+  userInput.value="";
+  const typing=showTyping();
+  setTimeout(()=>{typing.remove();respond(text);},1200);
+}
+
+function respond(text){
+  const lower=text.toLowerCase();
+
+  // small NLP helpers
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  if(lower.includes("wardrobe")){
+    const items = Object.values(wardrobe).flat();
+    if(items.length>0){
+      let reply = "🪞 From your saved wardrobe, consider:\n";
+      items.slice(0,6).forEach((it,i)=>{
+        const label = (typeof it === 'string') ? it.split('/').pop().split('?')[0] : `Saved item ${i+1}`;
+        reply += `- ${label}\n`;
+      });
+      reply += "\nIf you want a styled outfit from these, mention colors or the event.";
+      addMessage(reply,"ai-msg");
+    } else {
+      addMessage("Your wardrobe is empty — try adding items first.","ai-msg");
+    }
+    return;
+  }
+
+  // Occasion-specific suggestion pools
+  const weddingOpts = [
+    "Elegant midi dress in pastel tones, nude heels, delicate jewelry, and a small clutch.",
+    "Tailored jumpsuit in a jewel tone with statement earrings and strappy sandals.",
+    "Classic A-line gown with soft waves and minimal accessories for a timeless look."
+  ];
+
+  const partyOpts = [
+    "Sequin top with high-waist trousers and ankle boots for playful glam.",
+    "Slip dress layered with a cropped jacket and statement heels.",
+    "Bold-colored co-ord set with chunky sandals and layered necklaces."
+  ];
+
+  const dateOpts = [
+    "Flowy wrap dress, low block heels, and a simple pendant for flirty elegance.",
+    "High-waist skirt with silk blouse, ankle boots, and natural makeup.",
+    "Cropped knit with a midi skirt and cute flats for a relaxed, pretty vibe."
+  ];
+
+  const businessOpts = [
+    "Tailored blazer with straight trousers, loafers, and a slim tote for a sharp look.",
+    "Sheath dress with a structured coat, pumps, and minimal jewelry for interviews.",
+    "Monochrome suit with subtle texture and closed-toe heels for professional polish."
+  ];
+
+  const casualOpts = [
+    "High-rise jeans, a soft tee, and white sneakers for easy everyday style.",
+    "Light sundress with sandals and a straw bag for warm-weather plans.",
+    "Relaxed linen set with slip-ons for comfortable weekend wear."
+  ];
+
+  // Map keywords to pools
+  const mapping = [
+    {keys:["wedding","bride","gala","formal"], pool:weddingOpts},
+    {keys:["party","celebration","birthday","club"], pool:partyOpts},
+    {keys:["date","romantic","dinner","anniversary"], pool:dateOpts},
+    {keys:["meeting","interview","business","presentation"], pool:businessOpts},
+    {keys:["casual","everyday","coffee","errand","weekend"], pool:casualOpts}
+  ];
+
+  for(const map of mapping){
+    if(map.keys.some(k=>lower.includes(k))){
+      // produce 2 different suggestions from pool
+      const first = pick(map.pool);
+      let second = pick(map.pool);
+      // ensure second suggestion differs when possible
+      if(map.pool.length>1){while(second===first){second=pick(map.pool);}}
+      addMessage(`✨ ${first}`,"ai-msg");
+      addMessage(`✨ ${second}`,"ai-msg");
+      // optional quick tips
+      const tip = pick(["Consider your comfort level and the dress code.","Add one statement accessory rather than many.","Match your shoes to the formality of the event."]);
+      addMessage(`Tip: ${tip}`,"ai-msg");
+      return;
+    }
+  }
+
+  // If none matched, provide varied fallback suggestions
+  addMessage(pick(["💜 Soft pastels and classic silhouettes work in many settings.","💜 Try pairing a statement top with neutral bottoms and simple accessories.","💜 Mention the specific occasion, time, and weather for tailored suggestions."]),"ai-msg");
+}
+
+function restyleInColourStylist(imageSrc){
+  localStorage.setItem("restyleOutfit", imageSrc);
+  window.location.href = "colourpalette.html";
+}
+
+renderChat();
+</script>
+<script type="module">
+  import { db, storage } from "./firebase.js";
+  console.log("Home page connected to Firebase");
+</script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Colour & Fabric Stylist | My Stylist</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{
+  background:linear-gradient(135deg,#ffe6f7,#f8e6ff,#ffffff);
+  min-height:100vh;display:flex;flex-direction:column;color:#333;
+}
+
+/* HEADER */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 40px;background:rgba(255,255,255,0.3);
+  backdrop-filter:blur(15px);box-shadow:0 4px 25px rgba(216,187,255,0.3);
+}
+header h1{
+  font-family:"Dancing Script",cursive;font-size:2.5rem;
+  background:linear-gradient(120deg,#e3a3b5,#b38bff,#f6d9f3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 6s infinite linear;
+}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+
+.go-back{
+  background:#b38bff;color:#fff;padding:8px 16px;border-radius:12px;
+  text-decoration:none;box-shadow:0 0 15px rgba(179,139,255,0.6);
+}
+
+/* MAIN */
+.container{
+  width:95%;max-width:1100px;margin:40px auto;
+  background:rgba(255,255,255,0.35);
+  backdrop-filter:blur(15px);
+  border-radius:25px;
+  padding:30px 40px;
+  box-shadow:0 0 25px rgba(179,139,255,0.4);
+  display:flex;flex-direction:column;gap:25px;
+}
+
+.title{
+  text-align:center;
+  font-family:"Dancing Script",cursive;
+  font-size:2.3rem;color:#7d57c9;
+}
+
+/* PREVIEW */
+.preview-area{
+  display:flex;flex-wrap:wrap;gap:20px;justify-content:center;
+  padding:15px;background:rgba(255,255,255,0.5);
+  border-radius:20px;
+}
+.preview-card{
+  width:140px;height:180px;border-radius:15px;
+  overflow:hidden;box-shadow:0 0 20px rgba(179,139,255,0.4);
+}
+.preview-card img{width:100%;height:100%;object-fit:cover}
+
+/* UPLOAD */
+.uploads{display:flex;justify-content:center;gap:20px}
+.upload-btn{
+  background:#b38bff;color:#fff;padding:10px 20px;
+  border-radius:15px;cursor:pointer;
+  box-shadow:0 0 15px rgba(179,139,255,0.5);
+}
+#uploadOutfit,#uploadFabric{display:none}
+
+/* CHAT */
+.chat-box{
+  background:rgba(255,255,255,0.5);
+  border-radius:20px;
+  padding:20px;min-height:350px;
+  display:flex;flex-direction:column;gap:12px;
+  overflow-y:auto;
+}
+.msg{
+  padding:12px 16px;border-radius:18px;max-width:75%;
+}
+.user-msg{
+  align-self:flex-end;
+  background:linear-gradient(120deg,#d5b3ff,#b38bff);
+  color:white;
+}
+.ai-msg{
+  align-self:flex-start;
+  background:white;color:#4a3b75;
+  box-shadow:0 0 10px rgba(200,160,255,0.3);
+}
+.typing{
+  align-self:flex-start;
+  font-style:italic;color:#7d57c9;
+}
+
+.ai-media img{
+  max-width:250px;border-radius:15px;
+  box-shadow:0 0 20px rgba(179,139,255,0.5);
+}
+
+/* INPUT */
+.input-area{display:flex;gap:10px}
+textarea{
+  flex:1;height:70px;border-radius:15px;
+  padding:12px;border:none;outline:none;
+}
+button{
+  background:#b38bff;color:#fff;
+  border:none;border-radius:15px;
+  padding:12px 20px;cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <a class="go-back" href="home.html">← Go Back</a>
+  <h1>AI Colour & Fabric Stylist</h1>
+</header>
+
+<div class="container">
+  <h2 class="title">Transform Your Outfit 🎨</h2>
+
+  <div class="preview-area" id="previewArea">
+    <p>No uploads yet</p>
+  </div>
+
+  <div class="uploads">
+    <label class="upload-btn" for="uploadOutfit">Upload Outfit</label>
+    <label class="upload-btn" for="uploadFabric">Upload Fabric</label>
+  </div>
+  <input type="file" id="uploadOutfit" accept="image/*" multiple>
+  <input type="file" id="uploadFabric" accept="image/*" multiple>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <div class="input-area">
+    <textarea id="userInput" placeholder="Ask AI to recolour or restyle..."></textarea>
+    <button onclick="askAI()">Ask AI</button>
+  </div>
+</div>
+
+<script>
+const previewArea = document.getElementById("previewArea");
+const chatBox = document.getElementById("chatBox");
+const userInput = document.getElementById("userInput");
+
+function getCurrentUserId(){
+  try{ return localStorage.getItem('userUid') || localStorage.getItem('username') || 'guest'; }
+  catch(e){ return 'guest'; }
+}
+function getUploadsKey(){ return `colourUploads_${getCurrentUserId()}`; }
+
+// If an old generic key exists while a user is signed in, remove it to avoid leakage
+try{
+  if(localStorage.getItem('colourUploads') && getCurrentUserId() !== 'guest'){
+    localStorage.removeItem('colourUploads');
+  }
+}catch(e){}
+
+let uploads = (function(){
+  try{ return JSON.parse(localStorage.getItem(getUploadsKey()) || '[]'); }
+  catch(e){ return []; }
+})();
+let imgIndex = 0;
+
+const AI_IMAGES = [
+  "https://docket.kartmax.in/sites/9s145MyZrWdIAwpU0JYS/product-images/stylish_peach_net_gown_for_party_wear_1735364222as3195170_1.jpg",
+  "https://rimzimfashion.com/cdn/shop/files/120copy_1200x.jpg?v=1725512842",
+  "https://clothsvilla.com/cdn/shop/files/blue-elegant-party-wear-gown-long-koti-set-with-embroidery-and-sequins_4_1024x1024.jpg?v=1736416701"
+];
+
+function renderUploads(){
+  previewArea.innerHTML="";
+  if(!uploads.length){
+    previewArea.innerHTML="<p>No uploads yet</p>";
+    return;
+  }
+  uploads.forEach((src,i)=>{
+    const d=document.createElement("div");
+    d.className="preview-card";
+    d.innerHTML=`<img src="${src}">`;
+    d.oncontextmenu=e=>{
+      e.preventDefault();
+      if(confirm("Delete this image?")){
+        uploads.splice(i,1);
+        saveUploads();
+      }
+    };
+    previewArea.appendChild(d);
+  });
+}
+function saveUploads(){
+  try{ localStorage.setItem(getUploadsKey(),JSON.stringify(uploads)); }
+  catch(e){}
+  renderUploads();
+}
+
+function handleUpload(input){
+  [...input.files].forEach(f=>{
+    const r=new FileReader();
+    r.onload=()=>{uploads.push(r.result);saveUploads();}
+    r.readAsDataURL(f);
+  });
+}
+uploadOutfit.onchange=()=>handleUpload(uploadOutfit);
+uploadFabric.onchange=()=>handleUpload(uploadFabric);
+
+function addMsg(text,cls){
+  const d=document.createElement("div");
+  d.className="msg "+cls;
+  d.textContent=text;
+  chatBox.appendChild(d);
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function addImage(src){
+  const d=document.createElement("div");
+  d.className="ai-media";
+  d.innerHTML=`<img src="${src}">`;
+  chatBox.appendChild(d);
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+addMsg("👗 Upload an outfit or fabric and ask me to restyle it.","ai-msg");
+
+function askAI(){
+  const q=userInput.value.trim();
+  if(!q)return;
+  addMsg(q,"user-msg");
+  userInput.value="";
+
+  const typing=document.createElement("div");
+  typing.className="typing";
+  typing.textContent="🎨 AI is creating your image...";
+  chatBox.appendChild(typing);
+  chatBox.scrollTop=chatBox.scrollHeight;
+
+  setTimeout(()=>{
+    typing.remove();
+    addImage(AI_IMAGES[imgIndex]);
+    addMsg("✨ Here’s a refined look based on your request.","ai-msg");
+    imgIndex=(imgIndex+1)%AI_IMAGES.length;
+  },5000);
+}
+
+renderUploads();
+</script>
+
+</body>
+</html>

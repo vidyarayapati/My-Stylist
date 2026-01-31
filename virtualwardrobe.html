@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtual Wardrobe | My Stylist</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{
+  background:linear-gradient(135deg,#ffe6f7,#f8e6ff,#ffffff);
+  min-height:100vh;color:#333;display:flex;flex-direction:column;
+}
+
+/* HEADER */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 40px;background:rgba(255,255,255,0.3);
+  backdrop-filter:blur(15px);
+  box-shadow:0 4px 25px rgba(216,187,255,0.3);
+}
+header h1{
+  font-family:"Dancing Script",cursive;font-size:2.5rem;
+  background:linear-gradient(120deg,#e3a3b5,#b38bff,#f6d9f3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+.go-back{
+  background:#b38bff;color:#fff;padding:8px 15px;border-radius:12px;
+  text-decoration:none;box-shadow:0 0 15px rgba(179,139,255,0.6);
+}
+
+/* LAYOUT */
+.container{
+  width:95%;max-width:1200px;margin:40px auto;
+  display:flex;gap:30px;
+}
+
+.categories{
+  flex:0.3;display:flex;flex-direction:column;gap:15px;
+}
+.categories button{
+  padding:12px;border:none;border-radius:12px;
+  background:#b38bff;color:#fff;cursor:pointer;
+  box-shadow:0 0 15px rgba(179,139,255,0.5);
+}
+/* subtle hover glow to highlight category under cursor (no theme changes) */
+.categories button:hover{
+  /* lavender glow on hover */
+  box-shadow: 0 14px 48px rgba(179,139,255,0.65), 0 0 18px rgba(179,139,255,0.18) inset;
+  transform: translateY(-4px);
+  transition: all 180ms ease;
+  outline: none;
+}
+/* persistent lavender glow for the currently selected category (applies on click/touch) */
+.category-selected{
+  box-shadow: 0 18px 60px rgba(179,139,255,0.70), 0 0 22px rgba(179,139,255,0.22) inset;
+  transform: translateY(-6px);
+  transition: all 220ms ease;
+}
+
+.items-section{
+  flex:0.7;display:flex;flex-wrap:wrap;gap:20px;
+  background:rgba(255,255,255,0.35);
+  backdrop-filter:blur(15px);
+  padding:20px;border-radius:25px;
+  box-shadow:0 0 25px rgba(179,139,255,0.5);
+  min-height:300px;
+  position:relative;
+}
+
+.item-card{
+  width:120px;height:160px;border-radius:15px;
+  overflow:hidden;position:relative;
+  box-shadow:0 0 15px rgba(179,139,255,0.5);
+}
+.item-card img{width:100%;height:100%;object-fit:cover;}
+
+.add-card{
+  display:flex;align-items:center;justify-content:center;
+  background:#b38bff;color:#fff;font-weight:500;
+  cursor:pointer;
+}
+
+/* CONTEXT MENU */
+.context-menu{
+  position:fixed;background:#fff;border-radius:10px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.25);
+  z-index:9999;overflow:hidden;
+}
+.context-menu div{
+  padding:10px 15px;cursor:pointer;font-size:0.9rem;
+}
+.context-menu div:hover{background:#f1e8ff}
+
+.done-btn{
+  margin:30px auto;
+  padding:12px 25px;background:#b38bff;color:#fff;
+  border:none;border-radius:15px;cursor:pointer;
+  box-shadow:0 0 15px rgba(179,139,255,0.5);
+}
+
+/* subtle glow for clicked options (keeps theme intact) */
+.glow{box-shadow:0 8px 30px rgba(179,139,255,0.45);transform:translateY(-4px);transition:all 180ms ease}
+</style>
+</head>
+
+<body>
+
+<header>
+  <a class="go-back" onclick="goBack()">← Go Back</a>
+  <h1>Welcome to Your Virtual Wardrobe</h1>
+</header>
+
+<div class="container">
+  <div class="categories">
+    <button onclick="showCategory('tops')">Tops</button>
+    <button onclick="showCategory('bottoms')">Bottoms</button>
+    <button onclick="showCategory('dresses')">Dresses</button>
+    <button onclick="showCategory('footwear')">Footwear</button>
+    <button onclick="showCategory('handaccessories')">Hand Accessories</button>
+    <button onclick="showCategory('bags')">Bags</button>
+    <button onclick="showCategory('outerwear')">Outerwear</button>
+  </div>
+
+  <div class="items-section" id="itemsSection">
+    <p style="margin:auto;color:#555;">Select a category</p>
+  </div>
+</div>
+
+<button class="done-btn" onclick="doneSelection()">Done</button>
+<input type="file" id="uploadInput" accept="image/*" hidden>
+
+<script>
+// Use sessionStorage for guest users so wardrobe doesn't persist across accounts.
+const uid = localStorage.getItem('userUid');
+const isGuest = !uid;
+const WARDROBE_KEY = isGuest ? 'wardrobeSelectedItems_session' : `wardrobeSelectedItems_${uid}`;
+const TRYON_KEY = isGuest ? 'tryonSelectedItems_session' : `tryonSelectedItems_${uid}`;
+const storageEngine = isGuest ? sessionStorage : localStorage;
+
+let wardrobe = JSON.parse(storageEngine.getItem(WARDROBE_KEY)) || {};
+let currentCategory = null;
+
+const itemsSection = document.getElementById("itemsSection");
+const uploadInput = document.getElementById("uploadInput");
+
+/* ---------- RENDER ---------- */
+function showCategory(category){
+  currentCategory = category;
+  itemsSection.innerHTML = "";
+
+  const items = wardrobe[category] || [];
+
+  items.forEach((src,index)=>{
+    const card = document.createElement("div");
+    card.className = "item-card";
+    card.innerHTML = `<img src="${src}">`;
+
+    card.oncontextmenu = e => {
+      e.preventDefault();
+      showMenu(e.pageX,e.pageY,category,index);
+    };
+
+    itemsSection.appendChild(card);
+  });
+
+  const add = document.createElement("div");
+  add.className = "item-card add-card";
+  add.textContent = "+ Add";
+  add.onclick = () => uploadInput.click();
+  itemsSection.appendChild(add);
+}
+
+// persistently highlight the selected category button (click or touch)
+document.querySelectorAll('.categories button').forEach(btn=>{
+  const apply = ()=>{
+    document.querySelectorAll('.categories button').forEach(b=>b.classList.remove('category-selected'));
+    btn.classList.add('category-selected');
+  };
+  btn.addEventListener('click', apply);
+  btn.addEventListener('touchstart', apply, {passive:true});
+});
+
+/* ---------- CONTEXT MENU ---------- */
+function showMenu(x,y,category,index){
+  removeMenu();
+  const menu = document.createElement("div");
+  menu.className = "context-menu";
+  menu.style.left = x+"px";
+  menu.style.top = y+"px";
+  menu.innerHTML = `
+    <div onclick="selectToTryon('${category}',${index})">📋 Select to Tryon page</div>
+    <div onclick="deleteItem('${category}',${index})">🗑 Delete</div>
+  `;
+  document.body.appendChild(menu);
+}
+
+function removeMenu(){
+  const m = document.querySelector(".context-menu");
+  if(m) m.remove();
+}
+
+/* ---------- ACTIONS ---------- */
+function copyToTryon(category,index){
+  // kept for backward compatibility; prefer using selectToTryon
+  selectToTryon(category,index);
+}
+
+// Copy item into tryon storage used by tryon.html
+function selectToTryon(category,index){
+  const src = wardrobe[category][index];
+  const tryonEngine = storageEngine;
+  let arr = JSON.parse(tryonEngine.getItem(TRYON_KEY)) || [];
+  if(!arr.includes(src)) arr.push(src);
+  tryonEngine.setItem(TRYON_KEY, JSON.stringify(arr));
+  removeMenu();
+  // brief glow on the selected card to indicate action without changing theme
+  const cards = itemsSection.querySelectorAll('.item-card');
+  const target = cards[index];
+  if(target){
+    target.classList.add('glow');
+    setTimeout(()=>target.classList.remove('glow'),700);
+  }
+  alert('Selected to Tryon ✅');
+}
+
+function deleteItem(category,index){
+  wardrobe[category].splice(index,1);
+  saveWardrobe();
+  showCategory(category);
+  removeMenu();
+}
+
+/* ---------- UPLOAD ---------- */
+uploadInput.onchange = e=>{
+  const file = e.target.files[0];
+  if(!file || !currentCategory) return;
+
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    wardrobe[currentCategory] = wardrobe[currentCategory] || [];
+    wardrobe[currentCategory].push(reader.result);
+    saveWardrobe();
+    showCategory(currentCategory);
+  };
+  reader.readAsDataURL(file);
+};
+
+function saveWardrobe(){
+  storageEngine.setItem(WARDROBE_KEY, JSON.stringify(wardrobe));
+}
+
+function doneSelection(){
+  window.location.href = "home.html";
+}
+
+// Robust goBack: use history when available, otherwise fall back to home
+function goBack(){
+  try{
+    if(window.history.length>1){
+      window.history.back();
+    } else {
+      window.location.href = 'home.html';
+    }
+  }catch(e){
+    window.location.href = 'home.html';
+  }
+}
+</script>
+
+</body>
+</html>

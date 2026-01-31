@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Compare Outfits | My Stylist</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{
+  background:linear-gradient(135deg,#ffe6f7,#f8e6ff,#ffffff);
+  min-height:100vh;color:#333;display:flex;flex-direction:column;
+}
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 40px;background:rgba(255,255,255,0.3);
+  backdrop-filter:blur(15px);
+  box-shadow:0 4px 25px rgba(216,187,255,0.3);
+  position:sticky;top:0;z-index:10;
+}
+header h1{
+  font-family:"Dancing Script",cursive;
+  font-size:2.5rem;
+  background:linear-gradient(120deg,#e3a3b5,#b38bff,#f6d9f3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 6s infinite linear;
+}
+@keyframes shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
+.go-back{
+  font-size:1rem;background:#b38bff;color:#fff;padding:8px 15px;
+  border-radius:12px;cursor:pointer;box-shadow:0 0 15px rgba(179,139,255,0.6);
+  transition:all 0.3s ease;text-decoration:none;
+}
+.go-back:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(179,139,255,0.8);}
+.container{
+  width:95%;max-width:1200px;margin:40px auto;
+  display:flex;flex-direction:column;gap:30px;
+}
+.section{
+  background:rgba(255,255,255,0.35);
+  backdrop-filter:blur(15px);
+  border-radius:25px;padding:20px;
+  box-shadow:0 0 25px rgba(179,139,255,0.5);
+}
+.section h2{
+  font-family:"Dancing Script",cursive;font-size:2rem;
+  margin-bottom:20px;color:#7d57c9;text-align:center;
+}
+.btn{
+  padding:10px 20px;border:none;border-radius:15px;background:#b38bff;
+  color:#fff;cursor:pointer;margin:5px;
+  box-shadow:0 0 15px rgba(179,139,255,0.5);
+  transition:all 0.3s ease;
+}
+.btn:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(179,139,255,0.7);}
+.items-grid{
+  display:flex;flex-wrap:wrap;gap:20px;justify-content:center;
+}
+.item-card{
+  width:120px;height:160px;border-radius:15px;overflow:hidden;
+  position:relative;box-shadow:0 0 15px rgba(179,139,255,0.5);
+  transition:transform 0.2s ease;
+}
+.item-card:hover{transform:scale(1.05);}
+.item-card img{width:100%;height:100%;object-fit:cover;}
+.chat-box{
+  background:rgba(255,255,255,0.5);
+  border-radius:20px;
+  box-shadow:inset 0 0 20px rgba(179,139,255,0.3);
+  padding:20px;min-height:300px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:15px;
+}
+.msg{padding:12px 16px;border-radius:18px;max-width:75%;animation:fadeIn 0.4s ease;}
+.user-msg{align-self:flex-end;background:linear-gradient(120deg,#d5b3ff,#b38bff);color:white;box-shadow:0 0 10px rgba(179,139,255,0.6);}
+.ai-msg{align-self:flex-start;background:rgba(255,255,255,0.85);
+  border:1px solid rgba(200,160,255,0.3);
+  box-shadow:0 0 10px rgba(200,160,255,0.3);color:#333;}
+.typing{align-self:flex-start;background:rgba(255,255,255,0.85);
+  border-radius:18px;padding:10px 18px;color:#7d57c9;
+  font-style:italic;animation:pulse 1.5s infinite ease-in-out;}
+@keyframes pulse{0%,100%{opacity:0.6;}50%{opacity:1;}}
+footer{text-align:center;padding:15px;font-size:0.9rem;color:#777;margin-top:30px;}
+#uploadInput{display:none;}
+</style>
+</head>
+
+<body>
+<header>
+  <a class="go-back" href="home.html"><i class="fas fa-arrow-left"></i> Go Back</a>
+  <h1>Compare Outfits</h1>
+</header>
+
+<div class="container">
+  <div class="section">
+    <h2>Select Items for Comparison</h2>
+    <p style="text-align:center;">Select outfits from your wardrobe or upload manually to compare which suits you better.</p>
+    <div style="text-align:center;margin-top:15px;">
+      <label class="btn" for="uploadInput"><i class="fas fa-upload"></i> Upload Your Outfits</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Items to Compare</h2>
+    <div class="items-grid" id="compareItemsGrid">
+      <p style="color:#555; text-align:center; width:100%;">No items selected yet</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Ask AI for Best Outfit</h2>
+    <div class="chat-box" id="chatBox"></div>
+    <textarea id="aiQuestion" placeholder="E.g., Which outfit suits me better for a party?" 
+      style="width:100%;height:90px;padding:10px;border-radius:12px;border:1px solid #ccc;margin-top:15px;"></textarea>
+    <button class="btn" style="margin-top:10px;" onclick="askAI()">Ask AI</button>
+  </div>
+</div>
+
+<input type="file" id="uploadInput" accept="image/*" multiple onchange="handleUpload(event)" />
+
+<footer>© 2025 My Stylist • Designed with 💜 Lavender Aesthetics</footer>
+
+<script>
+let compareItems = [];
+const compareGrid = document.getElementById("compareItemsGrid");
+const chatBox = document.getElementById("chatBox");
+let chatHistory = [];
+
+// ---- Render Items ----
+function renderCompareItems(){
+  compareGrid.innerHTML = '';
+  if(compareItems.length===0){
+    compareGrid.innerHTML = '<p style="color:#555; text-align:center; width:100%;">No items selected yet</p>';
+    return;
+  }
+  const fragment = document.createDocumentFragment();
+  compareItems.forEach((src,index)=>{
+    const div = document.createElement('div');
+    div.classList.add('item-card');
+    const img = document.createElement('img');
+    img.src = src;
+    div.appendChild(img);
+    div.title = "Right-click to delete";
+    div.oncontextmenu = e=>{
+      e.preventDefault();
+      if(confirm('Delete this item?')){ 
+        compareItems.splice(index,1); 
+        saveItems(); 
+      }
+    }
+    fragment.appendChild(div);
+  });
+  compareGrid.appendChild(fragment);
+}
+function saveItems(){
+  // Keep selected items in-memory only; do not persist to localStorage
+  renderCompareItems();
+}
+
+// ---- Chat System ----
+function renderChat(){
+  chatBox.innerHTML = '';
+  if(chatHistory.length===0){
+    addMessage("🪄 Hi! Upload/select outfits, then ask me which one suits better.","ai-msg",false);
+  } else {
+    chatHistory.forEach(m=>addMessage(m.text,m.type,false));
+  }
+}
+function addMessage(text,type,save=true){
+  const msg = document.createElement("div");
+  msg.classList.add("msg",type);
+  msg.textContent = text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  // Keep chat in-memory only (do not persist to localStorage)
+  chatHistory.push({text,type});
+}
+function showTyping(){
+  const t = document.createElement("div");
+  t.classList.add("typing");
+  t.textContent="AI is thinking...";
+  chatBox.appendChild(t);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return t;
+}
+
+// ---- Upload ----
+function handleUpload(event){
+  const files = Array.from(event.target.files);
+  if(files.length===0) return;
+  let loadedCount = 0;
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      compareItems.push(reader.result);
+      loadedCount++;
+      if(loadedCount === files.length) saveItems(); // update once at the end
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---- Ask AI ----
+async function askAI(){
+  const questionBox = document.getElementById('aiQuestion');
+  const question = questionBox.value.trim();
+  if(compareItems.length < 1){ alert('Please upload or select outfits first!'); return; }
+  if(!question){ alert('Please enter your question.'); return; }
+
+  addMessage(question,"user-msg");
+  questionBox.value = ""; // clear after asking
+  const typing = showTyping();
+
+  // --- Simulation: Replace this section later with your backend call ---
+  setTimeout(()=>{
+    typing.remove();
+    const aiReply = simulateAI(question, compareItems);
+    addMessage(aiReply,"ai-msg");
+  },1000);
+}
+
+// ---- Temporary AI Simulation ----
+function simulateAI(question, images) {
+  let response = "💬 Analyzing your uploaded outfits... ";
+  if(images.length === 1)
+    response += "You uploaded one outfit — it looks elegant and minimal. Perfect for semi-formal events.";
+  else if(images.length === 2)
+    response += "Outfit 1 has a softer tone, Outfit 2 is bolder. ";
+  else
+    response += `I see ${images.length} outfits — quite a diverse collection! `;
+
+  const lower = question.toLowerCase();
+  if(lower.includes("party"))
+    response += "✨ For a party, choose the more vibrant or shimmering outfit.";
+  else if(lower.includes("wedding"))
+    response += "💐 For a wedding, go with the elegant pastel outfit.";
+  else if(lower.includes("office") || lower.includes("meeting"))
+    response += "🧥 For meetings, pick the structured or muted color outfit.";
+  else
+    response += "💜 Based on your images, I’d recommend the outfit that complements your complexion and event mood best.";
+
+  return response;
+}
+
+// ---- Navigation ----
+// wardrobe selection removed — uploads only
+
+// ---- Init ----
+renderCompareItems();
+renderChat();
+</script>
+<script type="module">
+  import { db, storage } from "./firebase.js";
+  console.log("Home page connected to Firebase");
+</script>
+</body>
+</html>

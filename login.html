@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login | My Stylist</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{
+  height:100vh;
+  background:linear-gradient(135deg,#ffe6f7,#f8e6ff,#ffffff);
+  display:flex;justify-content:center;align-items:center;
+  overflow:hidden;position:relative;
+}
+.floating-shapes{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;}
+.shape{position:absolute;border-radius:50%;
+background:radial-gradient(circle at 30% 30%,#ffe3f1,#e1b4ff);
+opacity:0.6;animation:float 10s infinite ease-in-out;}
+@keyframes float{
+  0%{transform:translateY(0);}
+  50%{transform:translateY(-50px);}
+  100%{transform:translateY(0);}
+}
+
+.auth-container{
+  position:relative;z-index:5;width:380px;
+  background:rgba(255,255,255,0.25);border-radius:25px;
+  padding:50px 40px;text-align:center;
+  backdrop-filter:blur(15px);
+  border:1px solid rgba(255,255,255,0.3);
+  box-shadow:0 0 25px rgba(216,187,255,0.7);
+  animation:fadeIn 1s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+
+.auth-container h1{
+  font-family:"Great Vibes",cursive;font-size:3rem;
+  background:linear-gradient(120deg,#e3a3b5,#b38bff,#f6d9f3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-size:200% auto;animation:shimmer 6s infinite linear;
+  margin-bottom:10px;
+}
+h2{
+  font-size:1.2rem;
+  color:#6b4bb3;
+  margin-bottom:25px;
+  letter-spacing:0.5px;
+}
+@keyframes shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+
+.input-group{margin:15px 0;position:relative;text-align:left;}
+input{
+  width:100%;padding:12px 40px 12px 16px;
+  border:1.5px solid rgba(255,255,255,0.6);
+  border-radius:30px;background:rgba(255,255,255,0.4);
+  font-size:0.95rem;outline:none;transition:all 0.3s ease;
+}
+input:focus{border-color:#b38bff;box-shadow:0 0 10px rgba(179,139,255,0.6);}
+.toggle-password{
+  position:absolute;right:15px;top:50%;transform:translateY(-50%);
+  cursor:pointer;color:#666;font-size:1rem;
+}
+button{
+  width:100%;padding:12px 0;
+  background:linear-gradient(135deg,#f4a6ff,#e48bff);
+  border:none;border-radius:30px;color:white;font-size:1rem;
+  cursor:pointer;box-shadow:0 4px 15px rgba(255,162,227,0.5);
+  transition:transform 0.3s ease,box-shadow 0.3s ease;margin-top:15px;
+}
+button:hover{transform:scale(1.05);box-shadow:0 6px 25px rgba(255,162,227,0.6);}
+.links{margin-top:15px;font-size:0.9rem;text-align:center;}
+.links a{color:#b57eff;text-decoration:none;transition:color 0.3s ease;}
+.links a:hover{color:#e3a3b5;text-decoration:underline;}
+.error-message{
+  color:red;font-size:0.9rem;margin-top:5px;text-align:center;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+<div class="floating-shapes"></div>
+
+<div class="auth-container">
+  <h1>Welcome Back!</h1>
+  <h2>Login to My Stylist</h2>
+
+  <form id="loginForm">
+    <div class="input-group">
+      <input type="email" id="email" placeholder="Email" required />
+    </div>
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Password" required />
+      <i class="fas fa-eye-slash toggle-password" id="togglePassword"></i>
+    </div>
+
+    <div id="errorMsg" class="error-message"></div>
+    <button type="submit">Login</button>
+
+    <div class="links">
+      <a href="signup.html">Don't have an account? Sign Up</a>
+    </div>
+  </form>
+</div>
+
+<script>
+// Floating animation
+const container = document.querySelector(".floating-shapes");
+for(let i=0;i<15;i++){
+  const shape=document.createElement("div");
+  shape.classList.add("shape");
+  const size=Math.random()*100+40;
+  shape.style.width=`${size}px`;
+  shape.style.height=`${size}px`;
+  shape.style.left=`${Math.random()*100}%`;
+  shape.style.top=`${Math.random()*100}%`;
+  shape.style.animationDuration=`${8+Math.random()*6}s`;
+  container.appendChild(shape);
+}
+
+// Toggle password visibility
+const passwordInput = document.getElementById("password");
+const toggleIcon = document.getElementById("togglePassword");
+toggleIcon.addEventListener("click",()=>{
+  if(passwordInput.type==="password"){
+    passwordInput.type="text";
+    toggleIcon.classList.replace("fa-eye-slash","fa-eye");
+  }else{
+    passwordInput.type="password";
+    toggleIcon.classList.replace("fa-eye","fa-eye-slash");
+  }
+});
+</script>
+
+<!-- ✅ Firebase Login Script -->
+<script type="module" src="firebase.js">
+  import { auth, db } from "./firebase.js";
+  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+  const loginForm = document.getElementById("loginForm");
+  const errorMsg = document.getElementById("errorMsg");
+
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      // persist current user uid
+      try{ localStorage.setItem('userUid', cred.user.uid); }catch(e){}
+      // fetch stored username from Firestore (if available) and prefer it over email prefix
+      try{
+        const udocRef = doc(db, 'users', cred.user.uid);
+        const udoc = await getDoc(udocRef);
+        if(udoc.exists() && udoc.data() && udoc.data().username){
+          localStorage.setItem('username', udoc.data().username);
+        } else {
+          localStorage.setItem('username', cred.user.email.split('@')[0]);
+        }
+      }catch(e){
+        // fallback to email prefix if Firestore read fails
+        try{ localStorage.setItem('username', cred.user.email.split('@')[0]); }catch(e){}
+      }
+      alert("✅ Login successful!");
+      // use replace to avoid leaving login in history
+      location.replace('home.html');
+    } catch (err) {
+      errorMsg.textContent = "⚠ " + err.message;
+      errorMsg.style.display = "block";
+    }
+  });
+
+  console.log("✅ Login page connected to Firebase");
+  // Import the functions you need from the SDKs you need
+
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDMMKq-bsFa9RCpd1qBmBUu139gpf-L3aQ",
+  authDomain: "mystylish-f8cac.firebaseapp.com",
+  projectId: "mystylish-f8cac",
+  storageBucket: "mystylish-f8cac.firebasestorage.app",
+  messagingSenderId: "1001618386242",
+  appId: "1:1001618386242:web:18aa1cd43480dc784cacdb",
+  measurementId: "G-S9NWBNNF7C"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+</script>
+
+</body>
+</html>

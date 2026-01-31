@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Saved Collections | My Stylist</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{background:linear-gradient(135deg,#ffe6f7,#f8e6ff,#ffffff); min-height:100vh; color:#333; display:flex; flex-direction:column;}
+header{display:flex;align-items:center;justify-content:space-between;padding:20px 40px;background: rgba(255,255,255,0.3);backdrop-filter: blur(15px);box-shadow:0 4px 25px rgba(216,187,255,0.3);position: sticky;top:0; z-index:10;}
+header h1{font-family:"Dancing Script",cursive; font-size:2.5rem;background: linear-gradient(120deg,#e3a3b5,#b38bff,#f6d9f3); -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation: shimmer 6s infinite linear;}
+@keyframes shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
+.go-back{font-size:1rem; background:#b38bff; color:#fff; padding:8px 15px; border-radius:12px; cursor:pointer; box-shadow:0 0 15px rgba(179,139,255,0.6); transition: all 0.3s ease; text-decoration:none;}
+.go-back:hover{transform: scale(1.05); box-shadow:0 0 25px rgba(179,139,255,0.8);}
+.container{width:95%; max-width:1200px; margin:40px auto; display:flex; flex-wrap:wrap; gap:25px; justify-content:center;}
+.outfit-card{width:180px; border-radius:20px; overflow:hidden; position:relative; box-shadow:0 0 25px rgba(179,139,255,0.5); background:rgba(255,255,255,0.35); backdrop-filter:blur(15px); transition:all 0.3s ease;}
+.outfit-card:hover{transform:scale(1.03); box-shadow:0 0 45px rgba(179,139,255,0.8);}
+.outfit-card img{width:100%; height:220px; object-fit:cover;}
+.card-buttons{display:flex; justify-content:space-around; padding:10px; background: rgba(255,255,255,0.2);}
+.card-buttons button{border:none; border-radius:12px; padding:6px 12px; cursor:pointer; transition:all 0.3s ease; font-size:0.85rem; color:#fff;}
+.delete-btn{background:#ff5c5c;}
+.delete-btn:hover{background:#ff1f1f; transform:scale(1.05);}
+.download-btn{background:#b38bff;}
+.download-btn:hover{background:#8c55ff; transform:scale(1.05);}
+.empty-message{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#555; font-size:1.1rem;}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="go-back" onclick="history.back()"><i class="fas fa-arrow-left"></i> Go Back</a>
+  <h1>My Saved Collections</h1>
+</header>
+
+<div class="container" id="collectionsContainer">
+  <p class="empty-message">You have no saved outfits yet.</p>
+</div>
+
+<script>
+// Load saved collections from localStorage
+let savedCollections = JSON.parse(localStorage.getItem("savedCollections")) || [];
+const container = document.getElementById("collectionsContainer");
+
+function renderCollections(){
+  container.innerHTML = '';
+  if(savedCollections.length === 0){
+    container.innerHTML = '<p class="empty-message">You have no saved outfits yet.</p>';
+    return;
+  }
+  savedCollections.forEach((src,index)=>{
+    const card = document.createElement("div");
+    card.classList.add("outfit-card");
+
+    const img = document.createElement("img");
+    img.src = src;
+    card.appendChild(img);
+
+    const buttons = document.createElement("div");
+    buttons.classList.add("card-buttons");
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.classList.add("delete-btn");
+    deleteBtn.textContent="Delete";
+    deleteBtn.onclick=(e)=>{
+      e.stopPropagation();
+      if(confirm("Delete this outfit from your collections?")){
+        savedCollections.splice(index,1);
+        localStorage.setItem("savedCollections",JSON.stringify(savedCollections));
+        renderCollections();
+      }
+    }
+
+    const downloadBtn = document.createElement("button");
+    downloadBtn.classList.add("download-btn");
+    downloadBtn.innerHTML='<i class="fas fa-download"></i>';
+    downloadBtn.onclick=(e)=>{
+      e.stopPropagation();
+      const a=document.createElement("a");
+      a.href=src;
+      a.download=`MyStylist_Look_${index+1}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    buttons.appendChild(deleteBtn);
+    buttons.appendChild(downloadBtn);
+    card.appendChild(buttons);
+    container.appendChild(card);
+  });
+}
+
+// Initial render
+renderCollections();
+</script>
+<script type="module">
+  import { db, storage } from "./firebase.js";
+  console.log("Home page connected to Firebase");
+</script>
+</body>
+</html>

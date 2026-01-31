@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>User Details | My Stylist</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{
+  background:linear-gradient(135deg,#ffe6f7,#f8e6ff,#ffffff);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:50px 20px;
+}
+.details-container{
+  background:rgba(255,255,255,0.25);
+  padding:50px 40px;
+  border-radius:25px;
+  backdrop-filter:blur(15px);
+  box-shadow:0 0 30px rgba(216,187,255,0.7);
+  width:100%;
+  max-width:500px;
+}
+h1{
+  font-family:"Dancing Script",cursive;
+  font-size:2.6rem;
+  background:linear-gradient(120deg,#e3a3b5,#b38bff,#f6d9f3);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:30px;
+  text-align:center;
+  animation: shimmer 5s linear infinite;
+}
+/* Go back link */
+.go-back{display:inline-block;margin-bottom:18px;padding:8px 12px;background:#b38bff;color:#fff;border-radius:12px;text-decoration:none;font-weight:600;box-shadow:0 6px 18px rgba(179,139,255,0.25)}
+.go-back:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(179,139,255,0.32)}
+@keyframes shimmer{
+  0%{background-position:0% center;}
+  100%{background-position:200% center;}
+}
+.form-group{margin-bottom:22px;}
+label{display:block;margin-bottom:6px;font-weight:500;color:#5e3ea1;}
+select,input{
+  width:100%;
+  padding:12px 15px;
+  border-radius:25px;
+  border:1.5px solid rgba(255,255,255,0.6);
+  background:rgba(255,255,255,0.5);
+  outline:none;
+}
+select:disabled,input:disabled{opacity:0.8;}
+select:focus,input:focus{
+  border-color:#b38bff;
+  box-shadow:0 0 12px rgba(179,139,255,0.5);
+}
+.error-message{
+  display:none;
+  background:rgba(255,240,250,0.9);
+  color:#b82e8a;
+  padding:10px;
+  border-radius:20px;
+  text-align:center;
+  margin-bottom:15px;
+}
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:30px;
+  font-size:1rem;
+  cursor:pointer;
+  margin-top:15px;
+  color:#fff;
+  transition:all 0.3s ease;
+}
+.done-btn{background:linear-gradient(135deg,#f4a6ff,#e48bff);}
+.edit-btn{background:linear-gradient(135deg,#6aabff,#4b8bff);}
+.save-btn{background:linear-gradient(135deg,#4bffb3,#2ecc71);}
+.btn:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 35px rgba(179,139,255,0.8);
+}
+.hidden{display:none;}
+</style>
+</head>
+
+<body>
+
+<div class="details-container">
+  <a class="go-back" id="goBackLink" href="#">← Go Back</a>
+  <h1 id="greetUser">Hello!</h1>
+
+  <div id="errorMsg" class="error-message"></div>
+
+  <div class="form-group">
+    <label>Gender</label>
+    <select id="gender">
+      <option value="">Select</option>
+      <option value="men">Men</option>
+      <option value="women">Women</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Skin Colour</label>
+    <select id="skinColor">
+      <option value="">Select</option>
+      <option value="fair">Fair</option>
+      <option value="medium">Medium</option>
+      <option value="olive">Olive</option>
+      <option value="brown">Brown</option>
+      <option value="dark">Dark</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Body Size</label>
+    <select id="bodySize">
+      <option value="">Select</option>
+      <option>XS</option><option>S</option><option>M</option>
+      <option>L</option><option>XL</option><option>XXL</option><option>XXXL</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Body Shape</label>
+    <select id="bodyShape">
+      <option value="">Select</option>
+      <option>Hourglass</option><option>Rectangle</option><option>Pear</option>
+      <option>Apple</option><option>Inverted Triangle</option><option>Oval</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Height (cm)</label>
+    <input type="number" id="height">
+  </div>
+
+  <div class="form-group">
+    <label>Age</label>
+    <input type="number" id="age">
+  </div>
+
+  <button id="doneBtn" class="btn done-btn">Done</button>
+  <button id="editBtn" class="btn edit-btn hidden">✨ Edit Details</button>
+  <button id="saveBtn" class="btn save-btn hidden">💾 Save Changes</button>
+</div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+const fields = ["gender","skinColor","bodySize","bodyShape","height","age"];
+const errorMsg = document.getElementById("errorMsg");
+const doneBtn = document.getElementById("doneBtn");
+const editBtn = document.getElementById("editBtn");
+const saveBtn = document.getElementById("saveBtn");
+
+const params = new URLSearchParams(window.location.search);
+const isEditMode = params.get("mode") === "edit";
+
+function setDisabled(state){
+  fields.forEach(id=>document.getElementById(id).disabled = state);
+}
+
+function getData(){
+  const data = {};
+  fields.forEach(id=>data[id]=document.getElementById(id).value);
+  return data;
+}
+
+function validate(data){
+  return Object.values(data).every(v=>v);
+}
+
+onAuthStateChanged(auth, async user=>{
+  if(!user){ window.location.href="login.html"; return; }
+
+  const username = localStorage.getItem("username") || user.email.split("@")[0];
+  document.getElementById("greetUser").textContent = `Hello, ${username}!`;
+
+  const ref = doc(db,"users",user.uid);
+  const snap = await getDoc(ref);
+
+  if(snap.exists()){
+    const data = snap.data();
+    fields.forEach(id=>{ if(data[id]) document.getElementById(id).value=data[id]; });
+  }
+
+  if(isEditMode){
+    doneBtn.classList.add("hidden");
+    editBtn.classList.remove("hidden");
+    setDisabled(true);
+  }
+});
+
+doneBtn.onclick = async ()=>{
+  const data = getData();
+  if(!validate(data)){
+    errorMsg.textContent="⚠ Please enter all details";
+    errorMsg.style.display="block";
+    return;
+  }
+  await setDoc(doc(db,"users",auth.currentUser.uid),data,{merge:true});
+  window.location.href="home.html";
+};
+
+editBtn.onclick = ()=>{
+  setDisabled(false);
+  editBtn.classList.add("hidden");
+  saveBtn.classList.remove("hidden");
+};
+
+saveBtn.onclick = async ()=>{
+  const data = getData();
+  if(!validate(data)){
+    errorMsg.textContent="⚠ Please enter all details";
+    errorMsg.style.display="block";
+    return;
+  }
+  await setDoc(doc(db,"users",auth.currentUser.uid),data,{merge:true});
+  setDisabled(true);
+  saveBtn.classList.add("hidden");
+  editBtn.classList.remove("hidden");
+  alert("💜 Details updated successfully!");
+};
+</script>
+
+<script>
+  // Set Go Back destination: if opened from signup, return to signup; otherwise home
+  (function(){
+    const link = document.getElementById('goBackLink');
+    if(!link) return;
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get('from');
+    try{
+      const ref = document.referrer || '';
+      if(from === 'signup' || ref.includes('signup.html')){
+        link.href = 'signup.html';
+      } else {
+        link.href = 'home.html';
+      }
+    }catch(e){
+      link.href = 'home.html';
+    }
+  })();
+</script>
+
+</body>
+</html>

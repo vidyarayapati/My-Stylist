@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Stylist | Home</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{
+  background:linear-gradient(135deg,#f8eaff,#fff6ff,#f2e8ff);
+  min-height:100vh;display:flex;flex-direction:column;color:#333;overflow-x:hidden;
+  scroll-behavior:smooth;
+}
+
+/* Header */
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:22px 60px;position:sticky;top:0;z-index:10;
+  background:rgba(255,255,255,0.4);backdrop-filter:blur(15px);
+  box-shadow:0 4px 25px rgba(216,187,255,0.3);
+  border-bottom:1px solid rgba(255,255,255,0.5);
+}
+header h1{
+  font-family:"Dancing Script",cursive;font-size:2.6rem;
+  background:linear-gradient(120deg,#e3a3b5,#b38bff,#f6d9f3);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-size:200% auto;animation:shimmer 6s infinite linear;
+  cursor:pointer;
+}
+@keyframes shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
+
+/* Nav links */
+.right-nav{display:flex;align-items:center;gap:18px;}
+.top-links{display:flex;gap:12px;}
+.top-links a{
+  text-decoration:none;color:#7d57c9;background:rgba(255,255,255,0.35);
+  padding:8px 14px;border-radius:12px;font-weight:500;
+  box-shadow:0 0 15px rgba(179,139,255,0.3);transition:all 0.3s ease;
+}
+.top-links a:hover{color:#b38bff;box-shadow:0 0 25px rgba(179,139,255,0.7);transform:translateY(-2px);}
+
+/* Profile */
+.profile{
+  position:relative;cursor:pointer;padding:8px 14px;font-weight:500;color:#7d57c9;
+  border-radius:15px;background:rgba(255,255,255,0.35);
+  backdrop-filter:blur(15px);box-shadow:0 0 15px rgba(179,139,255,0.3);
+  transition:all 0.3s ease;
+}
+.profile:hover{box-shadow:0 0 30px rgba(179,139,255,0.5);transform:translateY(-2px);}
+.profile-menu{
+  position:absolute;right:0;top:48px;background:rgba(255,255,255,0.4);
+  backdrop-filter:blur(15px);border-radius:20px;border:1px solid rgba(255,255,255,0.4);
+  box-shadow:0 0 25px rgba(200,160,255,0.5);
+  display:none;flex-direction:column;width:220px;overflow:hidden;z-index:20;
+}
+.profile-menu a{
+  text-decoration:none;
+  color:#4a3b75; /* default color */
+  padding:14px 18px;
+  font-size:0.95rem;
+  transition:all 0.3s ease;
+}
+/* Logout link in red */
+.profile-menu a.logout-link{
+  color:#e74c3c;
+  font-weight:600;
+}
+.profile-menu a:hover{
+  background:rgba(200,160,255,0.15);
+  color:#b38bff;
+}
+/* Logout hover stays darker red */
+.profile-menu a.logout-link:hover{
+  color:#c0392b;
+}
+
+/* Layout */
+.main{display:flex;justify-content:space-between;align-items:flex-start;width:95%;max-width:1400px;margin:60px auto;gap:20px;}
+.dashboard{
+  flex:1.2;background:rgba(255,255,255,0.25);border-radius:25px;
+  backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.3);
+  box-shadow:0 0 25px rgba(216,187,255,0.6),0 0 50px rgba(216,187,255,0.3);
+  padding:80px 30px 70px;
+}
+.section-title{
+  font-family:"Dancing Script",cursive;font-size:2.5rem;color:#8250c8;font-weight:700;
+  text-align:center;margin-bottom:50px;text-shadow:0 0 15px rgba(179,139,255,0.6);
+}
+.card-grid{display:flex;flex-direction:column;gap:30px;align-items:center;}
+.card{
+  width:95%;background:rgba(255,255,255,0.5);border-radius:22px;
+  padding:28px;text-align:center;backdrop-filter:blur(12px);
+  box-shadow:0 0 25px rgba(216,187,255,0.4),inset 0 0 15px rgba(216,187,255,0.2);
+  cursor:pointer;transition:all 0.35s ease;
+}
+.card:hover{transform:scale(1.04);box-shadow:0 0 45px rgba(200,160,255,0.7),inset 0 0 20px rgba(200,160,255,0.3);}
+.card i{font-size:2.3rem;color:#b38bff;margin-bottom:10px;}
+.card h3{color:#444;font-weight:600;margin-bottom:6px;font-size:1.2rem;}
+.card p{color:#666;font-size:0.9rem;}
+
+/* Fashion Gallery */
+.fashion-gallery{flex:1;display:flex;flex-direction:column;gap:30px;overflow:hidden;padding-right:20px;}
+.fashion-row{display:flex;gap:20px;animation:scrollLR 45s linear infinite;}
+.fashion-row.reverse{animation:scrollRL 45s linear infinite;}
+.fashion-row img{width:250px;height:340px;border-radius:20px;object-fit:cover;box-shadow:0 0 20px rgba(179,139,255,0.4);}
+@keyframes scrollLR{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+@keyframes scrollRL{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
+
+/* Bottom Section */
+.bottom-section{
+  max-width:1000px;margin:60px auto 20px;display:flex;flex-direction:column;text-align:center;gap:35px;
+}
+.bottom-section h3{
+  font-family:"Dancing Script",cursive;
+  font-size:1.9rem;
+  color:#7d57c9;
+  margin-bottom:4px;
+  
+}
+.bottom-section p{
+  color:#5a478f;
+  font-size:0.95rem;
+  line-height:1.6;
+}
+
+/* Highlight lavender glow */
+@keyframes lavenderGlow {
+  0% { box-shadow: 0 0 0 rgba(179,139,255,0); background:rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 40px rgba(179,139,255,0.8); background:rgba(245,235,255,0.7); }
+  100% { box-shadow: 0 0 0 rgba(179,139,255,0); background:rgba(255,255,255,0.4); }
+}
+.highlight { animation: lavenderGlow 2s ease-in-out; border-radius: 25px; }
+
+/* AI Box */
+.ai-box{
+  max-width:1000px;margin:40px auto 70px auto;background:rgba(255,255,255,0.45);
+  backdrop-filter:blur(20px);padding:30px 40px;border-radius:25px;text-align:center;
+  box-shadow:0 0 25px rgba(179,139,255,0.4);font-size:0.96rem;color:#555;line-height:1.7;
+}
+
+footer{text-align:center;padding:20px;color:#777;font-size:0.9rem;margin-top:20px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="greeting">Welcome, Fashionista 💜</h1>
+  <div class="right-nav">
+    <div class="top-links">
+      <a href="#" data-target="aboutSection">About</a>
+      <a href="#" data-target="contactSection">Contact Us</a>
+      <a href="#" data-target="supportSection">Support</a>
+    </div>
+    <div class="profile" id="profile">Profile ▼
+      <div class="profile-menu" id="profileMenu">
+        <a href="profile.html">View Profile</a>
+        <a href="details.html?mode=edit">Edit Details</a>
+        <a href="collections.html">My Collections</a>
+        <a href="#" data-target="supportSection">Support</a>
+        <a href="#" data-target="contactSection">Contact Us</a>
+        <a href="#" data-target="aboutSection">About</a>
+        <a href="#" class="logout-link" onclick="logout();return false;">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="dashboard">
+    <h2 class="section-title">Explore Your Fashion World</h2>
+    <div class="card-grid">
+      <div class="card" onclick="window.location.href='virtualwardrobe.html'"><i class="fas fa-archive"></i><h3>Your Virtual Wardrobe</h3><p>Store, organize, and manage your stylish outfits.</p></div>
+      <div class="card" onclick="window.location.href='tryon.html'"><i class="fas fa-user-friends"></i><h3>Try On</h3><p>Try on your outfits virtually and preview how they’ll look.</p></div>
+      <div class="card" onclick="window.location.href='occasionplanner.html'"><i class="fas fa-calendar-alt"></i><h3>AI Occasion Planner</h3><p>Let AI plan your perfect outfit for every occasion or mood.</p></div>
+      <div class="card" onclick="window.location.href='compareoutfits.html'"><i class="fas fa-balance-scale"></i><h3>Compare Outfits</h3><p>Compare styles side-by-side and choose the best look.</p></div>
+      <div class="card" onclick="window.location.href='colourpalette.html'"><i class="fas fa-palette"></i><h3>Colour Palette</h3><p>Transform outfit colours and find shades that flatter you best.</p></div>
+      <div class="card" onclick="window.location.href='sketchtostyle.html'"><i class="fas fa-pencil-ruler"></i><h3>Upload Design</h3><p>Upload sketches and let AI craft your dream outfit.</p></div>
+    </div>
+  </div>
+
+  <!-- Fashion Gallery -->
+  <div class="fashion-gallery">
+    <div class="fashion-row">
+      <img src="https://muffingroup.com/blog/wp-content/uploads/2021/07/beclothing.jpg">
+      <img src="https://img.freepik.com/free-vector/minimal-fashion-stylist-landing-page_23-2150055317.jpg">
+      <img src="https://assets.awwwards.com/awards/external/2020/04/5e8f3454bb7ff204489021_static.jpeg">
+      <img src="https://uicookies.com/wp-content/uploads/2020/11/Capitalshop.jpg">
+      <img src="https://cdn.prod.website-files.com/64da807a9aa000087e97b92d/64edd95d32693ca858866a9f_637710ee2c8a5c8c67127f2e_gallery_img1-2.jpeg">
+      <img src="https://assets.awwwards.com/awards/images/2019/05/50-fashion-cover3op-comp.jpg">
+    </div>
+    <div class="fashion-row reverse">
+      <img src="https://cdn.dribbble.com/userupload/36920975/file/original-59943db2dc6ed82809cf1ef7fe001b35.png">
+      <img src="https://uicookies.com/wp-content/uploads/2019/10/free-fashion-website-templates-1000x750.jpg">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnpYCwygDlgQLfqHTYwTxzavylve-5jwBEeg&s">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKxj7N5TevVf9Gr8a77bcy-1YcNon74fUxjQ&s">
+      <img src="https://s3-alpha.figma.com/hub/file/2227233078592201075/50bf33d2-af96-4104-b8ee-222017398399-cover.png">
+      <img src="https://archive.smashing.media/assets/344dbf88-fdf9-42bb-adb4-46f01eedd629/54d8929d-ae55-40cd-ac8f-394adb20e142/armani2.jpg">
+    </div>
+    <div class="fashion-row">
+      <img src="https://htmlburger.com/blog/wp-content/uploads/2024/01/Websites-for-Fashion-Designers-Fashion-Trends-The-Trend-Spotter.gif">
+      <img src="https://www.axiswebart.com/wp-content/uploads/fashion-website-design-development-guide-by-axis-web-art.webp">
+      <img src="https://cdn.prod.website-files.com/5f2718ed21bf9f7e11ab1c7a/5f2846eb6f987c66962ecbd2_image3-1-1.png">
+      <img src="https://i.pinimg.com/736x/25/e2/75/25e27510146399a185db7a5aa77ece3f.jpg">
+      <img src="https://s3-figma-hubfile-images-production.figma.com/hub/file/carousel/img/ee58ff76257b922f25a0903d32909b55b5a9d44f">
+      <img src="https://uicookies.com/wp-content/uploads/2020/11/fashion-bootstrap-template.jpg">
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Sections -->
+<div class="bottom-section" id="contactSection">
+  <h3>Contact Details</h3>
+  <p>Email: hello@mystylist.com | Phone: +91 9876543210<br>Location: Lavender Lane, Fashion City, India</p>
+</div>
+<div class="bottom-section" id="aboutSection">
+  <h3>About Us</h3>
+  <p>My Stylist blends AI with creative fashion design to offer every user a tailored, luxurious experience. We redefine digital styling through intelligence, innovation, and elegance.</p>
+</div>
+<div class="bottom-section" id="supportSection">
+  <h3>Collaborations</h3>
+  <p>We partner with international designers, stylists, and AI labs to shape the future of fashion. Together, we bring couture into the digital age with beauty and precision.</p>
+</div>
+
+<!-- AI Box -->
+<div class="ai-box">
+  <p>
+  <strong>Fashion with AI Suggested Styles 💜</strong><br><br>
+  Fashion meets intelligence — where creativity blends with computation.  
+  My Stylist uses AI to understand your preferences and craft perfect outfit recommendations.  
+  It analyzes silhouettes, hues, and seasonal trends, offering personalized inspiration.  
+  Whether planning for a gala or a casual day, your look will always radiate sophistication.  
+  This harmony between technology and aesthetics marks a new dawn in style evolution —  
+  with AI-powered fashion, luxury becomes personal.
+  </p>
+</div>
+
+<footer>© 2025 My Stylist • Designed with 💜 Lavender Aesthetics</footer>
+
+<script>
+  // Username greeting (use stored name when available; avoid placeholder)
+  const greetingEl = document.getElementById('greeting');
+  (function updateGreeting(){
+    const username = localStorage.getItem('username');
+    const uid = localStorage.getItem('userUid');
+    if (username && username !== 'undefined'){
+      greetingEl.textContent = `Welcome, ${username} 💜`;
+    } else if (uid){
+      greetingEl.textContent = `Welcome 💜`;
+    } else {
+      greetingEl.textContent = `Welcome 💜`;
+    }
+  })();
+
+
+
+  // Smooth scroll + highlight
+  function scrollAndHighlight(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const rect = el.getBoundingClientRect();
+    const offset = window.pageYOffset + rect.top - (window.innerHeight/2) + (rect.height/2);
+    window.scrollTo({ top: offset, behavior: 'smooth' });
+    el.classList.add('highlight');
+    setTimeout(()=> el.classList.remove('highlight'), 2000);
+  }
+
+  // Link handlers for top links and profile menu items
+  document.querySelectorAll('.top-links a, .profile-menu a').forEach(link=>{
+    link.addEventListener('click', function(e){
+      const target = this.dataset.target;
+      if(target){
+        e.preventDefault();
+        // close profile menu if open
+        const menu = document.getElementById('profileMenu');
+        if(menu) menu.style.display = 'none';
+        scrollAndHighlight(target);
+      }
+    });
+  });
+
+  // Profile menu toggle (prevent immediate close when clicking inside)
+  const profile = document.getElementById('profile');
+  const menu = document.getElementById('profileMenu');
+  profile.addEventListener('click', (e)=>{
+    // if clicked a link inside profile, let link handler run
+    if(e.target.tagName && e.target.tagName.toLowerCase() === 'a') return;
+    e.stopPropagation();
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    menu.style.flexDirection = 'column';
+  });
+
+  // Close menu when clicking outside profile
+  window.addEventListener('click', e=>{
+    if(!profile.contains(e.target)) menu.style.display = 'none';
+  });
+
+  // Logout: clear sensitive local keys and redirect to login (use replace to prevent back-nav)
+  function logout(){
+    try{
+      const userId = localStorage.getItem('userUid') || localStorage.getItem('username') || null;
+      localStorage.removeItem('userUid');
+      localStorage.removeItem('username');
+      // Remove generic keys
+      localStorage.removeItem('occasionChatHistory');
+      localStorage.removeItem('wardrobeSelectedItems');
+      localStorage.removeItem('tryonSelectedItems');
+      localStorage.removeItem('compareSelectedItems');
+      localStorage.removeItem('compareChatHistory');
+      localStorage.removeItem('tryonChatHistory');
+      localStorage.removeItem('colourUploads');
+      localStorage.removeItem('sketchToStyleChat');
+      if(userId){
+        localStorage.removeItem(`wardrobeSelectedItems_${userId}`);
+        localStorage.removeItem(`tryonSelectedItems_${userId}`);
+        localStorage.removeItem(`compareSelectedItems_${userId}`);
+        localStorage.removeItem(`tryonChatHistory_${userId}`);
+        localStorage.removeItem(`compareChatHistory_${userId}`);
+        localStorage.removeItem(`colourUploads_${userId}`);
+        localStorage.removeItem(`sketchToStyleChat_${userId}`);
+      }
+      // Also clear guest/session storage keys to avoid showing uploads across users
+      try{ sessionStorage.removeItem('tryonSelectedItems_session'); }catch(e){}
+      try{ sessionStorage.removeItem('wardrobeSelectedItems_session'); }catch(e){}
+      try{ sessionStorage.removeItem('compareSelectedItems_session'); }catch(e){}
+      try{ sessionStorage.removeItem('colourUploads_session'); }catch(e){}
+    }catch(e){}
+    // replace current history entry so back won't return here
+    location.replace('index.html');
+  }
+</script>
+<script type="module">
+  import { db, storage } from "./firebase.js";
+  console.log("Home page connected to Firebase");
+</script>
+</body>
+</html>
